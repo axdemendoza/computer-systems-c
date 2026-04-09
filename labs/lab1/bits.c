@@ -221,6 +221,13 @@ int isPositive(int x) {
  *   Rating: 2
  */
 int distinctNegation(int x) {
+  /*
+  1. Take the 2's compliment of x
+  2, check for any bits that don't match with XOR. Since the only way a 2's 
+      compliment doesn't equal its negation is if it's the smallest int value
+      (0x 8000 0000) and the negation of that is itself. 
+  3. Return 0 if bits are all the same, return 1 if bits differ 
+  */
   int y = (~x) + 1;
   return !!(x ^ y);
 }
@@ -235,6 +242,15 @@ int distinctNegation(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
+  /*
+  1. Checks if x is >= 0x30 by adding negation of 0x30 to x
+  2. Checks if x is <= 0x39 by adding negation of x to 0x39
+  3. bit shift results >>31 to make the MSB the LSB. 00..00 or 11..11
+  4. If not an Ascii digit then 1 or 2 would be negative
+  4. Ascii digits should make both checks = 0
+  5. check if a or b is negative 
+  6. return negation of 5
+  */
   int y = x + ((~0x30)+1); // checks if greater than or = 0x30
   int z = 0x39 + (~x)+1; // checks if less than or = 0x39
   int a = y >> 31;
@@ -251,7 +267,13 @@ int isAsciiDigit(int x) {
  *   Rating: 3 
  */
 int rotateRight(int x, int n) {
-  return 2;
+  int left_shift = (32 + (~n + 1)) & 31;
+  int z = (1 << (32-n)) + (~1)+1; // n 0s followed by all 1s
+  int y = x >> n;
+  y = x & z; // empty bits at n MSB followed by x
+  int a = x << ((32-n)%32);
+  int b = y | a;
+  return b;
 }
 /*
  * satMul3 - multiplies by 3, saturating to Tmin or Tmax if overflow
