@@ -221,7 +221,8 @@ int isPositive(int x) {
  *   Rating: 2
  */
 int distinctNegation(int x) {
-  return (~x) + 1;
+  int y = (~x) + 1;
+  return !!(x ^ y);
 }
 // Rating 3 - integer
 /* 
@@ -234,7 +235,12 @@ int distinctNegation(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+  int y = x + ((~0x30)+1); // checks if greater than or = 0x30
+  int z = 0x39 + (~x)+1; // checks if less than or = 0x39
+  int a = y >> 31;
+  int b = z >> 31;
+  int c = a | b;
+  return !c;
 }
 /* 
  * rotateRight - Rotate x to the right by n
