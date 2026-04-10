@@ -267,13 +267,13 @@ int isAsciiDigit(int x) {
  *   Rating: 3 
  */
 int rotateRight(int x, int n) {
-  int left_shift = (32 + (~n + 1)) & 31;
-  int z = (1 << (32-n)) + (~1)+1; // n 0s followed by all 1s
+  int left_shift = (32 + (~n + 1)) & 31; // how many bits to shift by (0-31)
+  int is_zero = !n; // 1 if n is zero; 0 otherwise - will be used in the next step
+  int leading_zeros = ((1+(~is_zero + 1)) << left_shift) + (~1 + 1); // n 0s followed by all 1s
   int y = x >> n;
-  y = x & z; // empty bits at n MSB followed by x
-  int a = x << ((32-n)%32);
-  int b = y | a;
-  return b;
+  int shifted_right = leading_zeros & y;
+  int shifted_left = x << left_shift;
+  return shifted_right | shifted_left;
 }
 /*
  * satMul3 - multiplies by 3, saturating to Tmin or Tmax if overflow
