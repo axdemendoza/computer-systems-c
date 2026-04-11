@@ -36,7 +36,7 @@ float_bits float_i2f(int i){
     // sign bit
     float_bits sign = i & 0x80000000; // sets the S bit to 0 or 1
 
-    // exponent bits
+    // if int is negative we can take the 2's compliment since sign bit handles negative already
     if (sign) {
         // take the 2's compliment
         i = ~i + 1;
