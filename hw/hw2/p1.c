@@ -1,8 +1,10 @@
 /*
 Axel De Mendoza
-MPCS 52015 - Advanced Computer Systems - The University of Chicago
-4/13/2026
+MPCS 52015 - Advanced Computer Systems
+The University of Chicago
+4/12/2026
 */
+
 #include <stdio.h>
 #include <stdlib.h>
 
