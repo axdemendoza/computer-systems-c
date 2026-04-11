@@ -287,7 +287,26 @@ int rotateRight(int x, int n) {
  *  Rating: 3
  */
 int satMul3(int x) {
-    return 2;
+  /*
+  Multiply by 3 is just: multiply by 2 + itself
+  */
+  int TMIN = 1 << 31;
+  int TMAX = ~TMIN;
+  // Multiply by 2 and check for overflow
+  int x_2 = x << 1; // multiply by 2
+  int x_sign_bits = x >> 31;
+  int x_2_sign_bits = x_2 >> 31;
+  int overflow_1 = x_sign_bits ^ x_2_sign_bits; // all 0s if no overflow, all 1s if overflow
+
+  int x_3 = x_2 + x; // add x + 2x
+  int x_3_sign_bits = x_3 >> 31;
+  int overflow_2 = x_3_sign_bits ^ x_2_sign_bits; // all 0s if no overflow, all 1s if overflow
+  
+  int overflow = overflow_1 | overflow_2;
+
+  int saturated_result = (x_sign_bits & TMIN) | (~x_sign_bits & TMAX);
+
+  return (saturated_result & overflow) | (~overflow & x_3);
 }
 /* 
  * isLess - if x < y  then return 1, else return 0 
@@ -297,7 +316,17 @@ int satMul3(int x) {
  *   Rating: 3
  */
 int isLess(int x, int y) {
-  return 2;
+  int sign_x = x >> 31;
+  int sign_y = y >> 31;
+  int sign_change = sign_x ^ sign_y;
+
+  int result_1 = (sign_x & sign_change) & 1; // 1 if sign changed AND x was negative
+
+  int result_2 = x + (~y + 1); // negative if x < y
+  result_2 = (result_2 >> 31) & 1;
+
+  // if sign changed then return result 1; otherwise return result 2
+  return (sign_change & result_1) | (result_2 & ~sign_change);
 }
 // Rating 4 - integer
 /* 
@@ -309,7 +338,9 @@ int isLess(int x, int y) {
  *   Rating: 4 
  */
 int isNonZero(int x) {
-  return 2;
+  int sign_bit = x | (~x + 1);
+  sign_bit = sign_bit >> 31;
+  return sign_bit & 1;
 }
 /* 
  * absVal - absolute value of x
