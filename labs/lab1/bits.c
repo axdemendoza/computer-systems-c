@@ -1,7 +1,7 @@
 /* 
  * CS:APP Data Lab 
  * 
- * <Please put your name and userid here>
+ * Axel De Mendoza (ademendoza)
  * 
  * bits.c - Source file with your solutions to the Lab.
  *          This is the file you will hand in to your instructor.
@@ -12,7 +12,7 @@
  * it's not good practice to ignore compiler warnings, but in this
  * case it's OK.  
  */
-#include <stdio.h>
+
 #if 0
 /*
  * Instructions to Students:
@@ -351,7 +351,9 @@ int isNonZero(int x) {
  *   Rating: 4
  */
 int absVal(int x) {
-  return 2;
+  int twos_compliment = ~x + 1;
+  int sign = x >> 31;
+  return (twos_compliment & sign) | (x & ~sign);
 }
 // Rating 2 - floating point
 /* 
@@ -366,7 +368,13 @@ int absVal(int x) {
  *   Rating: 2
  */
 unsigned floatAbsVal(unsigned uf) {
-  return 2;
+  unsigned abs = uf & (~(1 << 31)); // sets the MSB to 0 
+  unsigned exp_bits = (uf >> 23) & 0x000000FF;
+  unsigned frac_bits = uf & 0x007FFFFF;
+  if ((exp_bits == 255) && (frac_bits != 0)){
+    return uf;
+  }
+  return abs;
 }
 /* 
  * floatNegate - Return bit-level equivalent of expression -f for
@@ -380,7 +388,10 @@ unsigned floatAbsVal(unsigned uf) {
  *   Rating: 2
  */
 unsigned floatNegate(unsigned uf) {
- return 2;
+  if ((((uf >> 23) & 0x000000FF) == 255) && ((uf & 0x007FFFFF) != 0)){
+    return uf;
+  }
+  return uf ^ 0x80000000;
 }
 // Rating 3 - floating point
 /* 
@@ -395,7 +406,56 @@ unsigned floatNegate(unsigned uf) {
  *   Rating: 3
  */
 int floatIsLess(unsigned uf, unsigned ug) {
-    return 2;
+    // check for NaN and return 0 if either is NaN
+    unsigned uf_exp = (uf >> 23) & 0x000000FF;
+    unsigned ug_exp = (ug >> 23) & 0x000000FF;
+
+    unsigned uf_frac = uf & 0x007FFFFF;
+    unsigned ug_frac = ug & 0x007FFFFF;
+
+    unsigned uf_sign = uf >> 31;
+    unsigned ug_sign = ug >> 31;
+    
+    int negative_compare = 0;
+
+    // return 0 if either is NaN
+    if (((uf_exp == 255) && (uf_frac != 0)) || ((ug_exp == 255) && (ug_frac != 0))){
+      return 0;
+    }
+
+    // if both are 0 return 0 regardless of sign
+    if (((uf << 1) | (ug << 1)) == 0) {
+      return 0;
+    }
+
+    // check sign and return 0 or 1 if signs are different
+    
+    if (uf_sign != ug_sign){
+      return uf_sign > ug_sign;
+    }
+
+    // check if both floats are negative
+    
+    if ((uf & ug & 0x80000000) == 0x80000000){
+      negative_compare = 1;
+    }
+
+    // if signs are the same compare exp bits
+    if (uf_exp < ug_exp) {
+      return !negative_compare;
+    } else if (uf_exp > ug_exp){
+      return negative_compare;
+    }
+
+    // if exp bits are the same compare fractional bits
+    if (uf_frac < ug_frac) {
+      return !negative_compare;
+    } else if (uf_frac > ug_frac) {
+      return negative_compare;
+    }
+
+    return 0;
+
 }
 // Rating 4 - floating point
 /* 
@@ -411,7 +471,49 @@ int floatIsLess(unsigned uf, unsigned ug) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+  unsigned exp_bits = (uf >> 23) & 0x000000FF;
+  unsigned frac_bits = uf & 0x007FFFFF;
+  unsigned sign = uf >> 31;
+  int exp = exp_bits - 127;
+  unsigned value;
+  unsigned M = frac_bits | 0x00800000;
+
+  // check for inf and NaN
+  if (exp_bits == 0xFF){
+    return 0x80000000u;
+  }
+
+  // check for negative exponent or denorm
+  if (exp_bits <= 126){
+    return 0;
+  }
+
+  // check for out of range value
+  if (exp_bits > 31+127){
+    return 0x80000000u;
+  } else if ((exp_bits == 31+127) && (sign > 0)) {
+    if (frac_bits > 0) {
+      return 0x80000000u;
+    } else {
+      return 0x80000000;
+    }
+  } else if ((exp_bits == 31+127) && (sign == 0)){
+    return 0x80000000u;
+  }
+
+  // normalized
+  
+  if (exp >= 23){
+    value = M << (exp - 23);
+  } else {
+    value = M >> (23 - exp);
+  }
+
+  if (sign) {
+    return -value;
+  } else {
+    return value;
+  }
 }
 /* 
  * floatUnsigned2Float - Return bit-level equivalent of expression (float) u
@@ -423,5 +525,65 @@ int floatFloat2Int(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatUnsigned2Float(unsigned u) {
-    return 2;
+  unsigned exp = 0;
+  unsigned M;
+  unsigned w;
+  unsigned E;
+
+  // check if 0
+  if (u == 0){
+    return 0;
+  }
+
+  // find the position of the highest 1 bit by bit shifting right until we hit 0
+  
+  for (w = u; w > 0; w = w >> 1){
+      exp++;
+  }
+  exp--; // if 1 in pos 4, we want exp=3
+
+  // if exp > 23 then we have discarded bits and have to round
+  
+  if (exp > 23) {
+      // if bits need to be discarded we have to round
+      int num_discarded_bits = exp - 23;
+      // left shift discarded bits to the 0-7 positions and zero out bits to the left
+      // we will be left with discarded bits with a range of 0-255
+      // 10000000 (128) is the halfway point. Anything less should round down, anything greater rounds up
+      unsigned discarded_bits = (u << (8-num_discarded_bits)) & 0x000000FF; // 8 is the max # of discarded bits
+      // right shift fractional bits to the 0-22 position
+      M = u >> num_discarded_bits;
+      M = M & 0x007FFFFF; // zeros out left 9 bits leaving M in the 0-22 positions
+      if (discarded_bits > 128) {
+          // round up
+          M += 1; // add one to round up
+      } else if (discarded_bits < 128) {
+          // round down, do nothing
+      } else {
+          // if discarded_bits = 128 then 0.5 is right in the middle and we round to nearest even
+          // if LSB is 1 number is odd and we round up; if 0 then even and we round down
+          int LSB = 1 & M;
+          if (LSB == 1) {
+              M += 1;
+          } else {
+              // round down to nothing
+          }
+      }
+      // we have to check for overflow and increase EXP if overflow
+      if (M > 0x007FFFFF){
+          exp += 1;
+          M = M & 0x007FFFFF; // reset back to 23 bits if overflow
+      }
+  } else {
+      // EXP <= 23 then no discarded bits and no rounding
+      // fractional bits (mantissa)
+      M = u << (23-exp);
+      M = M & 0x007FFFFF; // zeros out left 9 bits leaving M in the 0-22 positions
+  }
+  
+  // encode the exp bits
+  E = exp + 127; // but exp needs to be encoded as e - 127
+  E = E << 23; // sets the exp bits in the 2-9 positions
+
+  return 0x0 | E | M;
 }
