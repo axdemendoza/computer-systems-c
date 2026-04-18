@@ -1,11 +1,11 @@
 .globl find_range
 find_range:
     xorps   %xmm1, %xmm1    #set xmm1 register equal to 0
-    ucomiss %xmm1, %xmm0    # compare to 0 and set flags (ZF, CF, SF)
+    ucomiss %xmm1, %xmm0    # compare to 0 and set flags (ZF, CF, PF)
     jp      .L4             # if NaN
-    jb      .L1             # if signed (input < 0 : SF = 1)
     jz      .L2             # if zero (input = 0 : ZF = 1)
-    ja      .L3             # if not signed (input > 0 : SF = 0)
+    jb      .L1             # if below 0
+    ja      .L3             # if above 0
     jmp     .L4
 .L1:
     mov     $0, %rax        # ret register set to 0 (NEG)
