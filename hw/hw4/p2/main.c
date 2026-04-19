@@ -1,3 +1,10 @@
+/*
+Axel De Mendoza
+MPCS 52015 - Advanced Computer Systems
+The University of Chicago
+4/19/2026
+*/
+
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
