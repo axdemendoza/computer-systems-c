@@ -1,8 +1,0 @@
-Date of Grade: 2026-04-24
-Hash of Commit Graded: 34a6336f3d8f2b56023e22bd12be7e3f938c6b73
-=====================================
-FEEDBACK
-
-Good work on this homework as always! 
-
-In p2, using the local variable is clean. 

@@ -1,9 +1,0 @@
-Date of Grade: 2026-04-19
-Hash of Commit Graded: 8cfff5a635ab6fd46b8f97b9de52009f70aee46c
-=====================================
-FEEDBACK
-
-Really great work with this homework. p3 is tricky, your 
-solution is very clever, and also correct. In your mind, 
-it is a good exercise to write out the math for it, 
-and see how the bits cancel out. 

@@ -1,7 +1,0 @@
-Date of Grade: 2026-04-19
-Hash of Commit Graded: febb43d16122c5e6c2a4175a36cab48921cb2d0c
-=====================================
-FEEDBACK
-
-Really well done all over, not much to comment on here.
-The floating point problems were well thought out
